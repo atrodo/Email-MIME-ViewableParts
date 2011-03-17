@@ -201,7 +201,7 @@ sub get_viewable_parts
   return get_parts( $parts, $preferred, $all_types );
 }
 
-sub search_parts
+sub _search_parts
 {
   my $parts       = shift;
   my $valid_types = shift;
@@ -222,14 +222,14 @@ sub get_html_parts
 {
   my @all_parts = get_viewable_parts( [@_], \@html_parts, \@text_parts );
 
-  return search_parts( \@all_parts, \@html_parts );
+  return _search_parts( \@all_parts, \@html_parts );
 }
 
 sub get_text_parts
 {
   my @all_parts = get_viewable_parts( [@_], \@text_parts, \@html_parts );
 
-  return search_parts( \@all_parts, \@text_parts );
+  return _search_parts( \@all_parts, \@text_parts );
 }
 
 =head1 AUTHOR
