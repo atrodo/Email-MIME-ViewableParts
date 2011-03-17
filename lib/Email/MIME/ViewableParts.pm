@@ -14,7 +14,7 @@ our @EXPORT_OK = qw/get_viewable_parts get_html_parts get_text_parts/;
 
 =head1 NAME
 
-Email::MIME::ViewableParts - The great new Email::MIME::ViewableParts!
+Email::MIME::ViewableParts - Find human viewable parts in a MIME email
 
 =head1 VERSION
 
@@ -26,27 +26,24 @@ our $VERSION = '0.1';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
+    use Email::MIME::ViewableParts qw/get_viewable_parts/;
 
-Perhaps a little code snippet.
+    my $email = Email::MIME->new($msg);
+    my @parts = get_viewable_parts($email);
 
-    use Email::MIME::ViewableParts;
+    my @text_parts = Email::MIME::ViewableParts::get_text_parts($email);
 
-    my $foo = Email::MIME::ViewableParts->new();
-    ...
+=head1 DESCRIPTION
 
-=head1 EXPORT
+This takes Email::MIME objects and finds the parts that can be displayed
+to a user.
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
-=head1 FUNCTIONS
-
-=head2 function1
+It tries to mimic the decisions of which MIME part to show that an email
+client would make.
 
 =cut
 
-my $part_return = sub {
+our $part_return = sub {
   my $part = shift;
   return $part;
 };
@@ -71,7 +68,7 @@ my %viewable_parts = (
     my @good_parts = get_parts( [ $part->parts ], @_ );
 
     my $preferred_parts = shift || [];
-    my $all_parts      = shift || [];
+    my $all_parts       = shift || [];
 
     foreach my $p (@good_parts)
     {
@@ -232,6 +229,125 @@ sub get_text_parts
   return _search_parts( \@all_parts, \@text_parts );
 }
 
+=head1 EXPORT
+
+These are the functions that can be exported and consist of the most common
+use cases
+
+=head2 get_viewable_parts
+
+Get any and all parts that we think are viewable.  By default, that list is:
+
+=over
+
+=item * text/html
+
+=item * text/plain
+
+=item * message/delivery-status (text)
+
+=back
+
+=head3 C<get_viewable_parts> parameters:
+
+=over
+
+=item * EmailMimeObject(s) (Required)
+
+The first parameter must be either an Email::MIME object or an array ref of
+Email::MIME objects.  If it is an Email::MIME object, it automatically
+uses the parts of that object as the objects to operate on
+
+=item * Preferred MIME types (Optional)
+
+The second parameter is an array ref of mime type strings that represent the
+mime types that you would prefer getting in multipart/alternative parts.
+See the L</"Notes About multipart/alternative"> section below.
+
+=item * Acceptable MIME types (Optional)
+
+The third parameter is also an array ref of mime type strings that represent
+the other mime types that you accept in the case of multipart/alternative
+parts.
+
+=back
+
+If the last two parameters are not given, then by default, get_viewable_parts
+will return all parts, including every viewable part in a
+multipart/alternative part.
+
+=head2 get_html_parts
+
+Get the parts that are html.  If there is a multipart/alternative part that
+does not have an html part but has a text part, it will give you the text part.
+See the L</"Notes About multipart/alternative"> section below.
+
+=head2 get_text_parts
+
+Get the parts that are text.  See above about multipart/alternative parts.
+
+=head1 FUNCTIONS
+
+In addition, there are some more function available to adjust the functionality
+of ViewableParts.
+
+=head2 add_html_part
+
+Add a mime type to the list of parts that are html. This will call
+add_viewable_part so you must pass a handler.
+
+=head2 add_text_part
+
+Add a mime type to the list of parts that are text. This will call
+add_viewable_part so you must pass a handler.
+
+=head2 add_viewable_part
+
+Add a new mime type to the list of mime that ViewableParts can handle. Two
+parameters are passed:
+
+=over
+
+=item * MIME Type string
+
+=item * Handler Coderef
+
+=back
+
+=head1 Handlers
+
+If you want to extend Email::MIME::ViewableParts with new MIME types, you can
+with handlers.  The handler is a coderef that returns all the parts in this
+section that are viewable.
+
+There are couple functions available that will help you discover subparts.
+They are documented below.
+
+Chances are, you want to use C<$Email::MIME::ViewableParts::part_return>,
+which will just return your part as is.
+
+=head2 * decode_ct
+
+This is a function to take a content type from an Email::MIME object and
+return a normalized string representation of it.  This uses
+L<Email::MIME::ContentType>.
+
+=head2 * get_parts
+
+This is the guts of L</get_viewable_parts>.  It accepts the same parameters
+except all the parameters are required it will not attempt to guess what types
+you want to accept.
+
+=head1 Notes About multipart/alternative
+
+One of the tricky parts of the choice of what MIME part to display is in
+multipart/alternative.  The question is which one to choose since each part
+is suppose to be equivalent.  That's why get_parts has a preferred and
+acceptable lists.  If any part is a preferred type, it will be included in
+the result.  If not, then it will look for acceptable parts.  All the parts
+that are acceptable are returned.  If none are preferred or acceptable, nothing
+will be returned.
+
 =head1 AUTHOR
 
 Jon Gentle, C<< <atrodo at atrodo.org> >>
@@ -241,8 +357,6 @@ Jon Gentle, C<< <atrodo at atrodo.org> >>
 Please report any bugs or feature requests to C<bug-email-mime-viewableparts at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Email-MIME-ViewableParts>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-
 
 
 =head1 SUPPORT
