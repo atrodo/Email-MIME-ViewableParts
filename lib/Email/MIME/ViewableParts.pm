@@ -3,7 +3,8 @@ package Email::MIME::ViewableParts;
 use warnings;
 use strict;
 use Carp;
-use List::Util;
+use Scalar::Util;
+use List::Util qw/first/;
 
 use Email::MIME;
 use Email::MIME::ContentType;
@@ -107,6 +108,15 @@ sub get_parts
   my $parts = shift;
 
   my @result;
+
+  if ( eval { $parts->isa("Email::MIME") } )
+  {
+    $parts = [ $parts->parts ];
+  }
+
+  croak "Invalid Arguments, an Email::MIME object or "
+    . "an array of Email::MIME objects must be passed to get_parts"
+    if ref $parts ne "ARRAY";
 
   foreach my $part (@$parts)
   {
