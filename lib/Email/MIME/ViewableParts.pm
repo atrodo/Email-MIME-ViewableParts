@@ -70,13 +70,13 @@ my %viewable_parts = (
     my @result;
     my @good_parts = get_parts( [ $part->parts ], @_ );
 
-    my $preffred_parts = shift || [];
+    my $preferred_parts = shift || [];
     my $all_parts      = shift || [];
 
     foreach my $p (@good_parts)
     {
       my $ct = decode_ct( $p->content_type );
-      push @result, $p if ( first { $ct eq $_ } @$preffred_parts );
+      push @result, $p if ( first { $ct eq $_ } @$preferred_parts );
     }
     return @result if scalar @good_parts;
 
