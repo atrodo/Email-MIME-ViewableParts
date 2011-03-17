@@ -117,9 +117,9 @@ sub get_parts
     my $viewable = $viewable_parts{$ct};
     next unless defined $viewable;
 
-    my $result_part = $viewable( $part, @_ );
+    my @result_parts = $viewable->( $part, @_ );
 
-    push @result, $result_part if defined $result_part;
+    push @result, @result_parts;
   }
 
   return $result[0] if !wantarray;
