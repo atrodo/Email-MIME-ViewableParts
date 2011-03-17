@@ -1,6 +1,6 @@
 #!perl
 
-use Test::More tests => 1;
+use Test::More tests => 3;
 use Readonly;
 
 use Email::MIME;
@@ -81,7 +81,6 @@ my $full_email = Email::MIME->create(
                                       ),
                                     ],
 );
-warn $full_email->as_string;
 
 my @all_parts;
 my @returned_parts;
