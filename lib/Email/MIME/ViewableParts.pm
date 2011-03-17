@@ -87,7 +87,7 @@ my %viewable_parts = (
     }
     return @result if scalar @good_parts;
 
-    return @good_parts;
+    return ();
   },
   'multipart/related' => sub {
     my $part = shift;
