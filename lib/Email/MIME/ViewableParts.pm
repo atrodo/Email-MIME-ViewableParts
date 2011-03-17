@@ -189,7 +189,16 @@ sub add_text_part
 
 sub get_viewable_parts
 {
-  return get_parts(@_);
+  my $parts     = shift;
+  my $preferred = shift;
+  my $all_types = shift;
+
+  if ( !defined $preferred && !defined $all_types )
+  {
+    $preferred = [ @html_parts, @text_parts ];
+    $all_types = $preferred;
+  }
+  return get_parts( $parts, $preferred, $all_types );
 }
 
 sub search_parts
